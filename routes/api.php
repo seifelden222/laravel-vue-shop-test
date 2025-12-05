@@ -27,6 +27,10 @@ Route::group(['prefix' => 'auth'], function () {
 
 Route::apiResource('products', ProductController::class)->middleware('auth:api');
 
+Route::get('dashboard/stats', [App\Http\Controllers\Api\DashboardController::class, 'stats'])->middleware('auth:api');
+
 // Orders Routes
 
+Route::get('orders', [OrderController::class, 'index'])->middleware('auth:api');
+Route::get('orders/{id}', [OrderController::class, 'show'])->middleware('auth:api');
 Route::post('orders', [OrderController::class, 'store'])->middleware('auth:api');
