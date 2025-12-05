@@ -1,108 +1,109 @@
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { login } from '@/routes';
-import { store } from '@/routes/register';
-import { Form, Head } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const form = ref({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+});
+
+const error = ref('');
+const loading = ref(false);
+
+const register = async () => {
+    loading.value = true;
+    error.value = '';
+    try {
+        const response = await axios.post('/api/auth/register', form.value);
+        const token = response.data.user.token; // Adjusted based on AuthController response structure
+        localStorage.setItem('token', token);
+        router.push('/products');
+    } catch (e: any) {
+        if (e.response && e.response.data && e.response.data.message) {
+            error.value = e.response.data.message;
+        } else {
+            error.value = 'An error occurred during registration.';
+        }
+    } finally {
+        loading.value = false;
+    }
+};
 </script>
 
 <template>
-    <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
-    >
-        <Head title="Register" />
-
-        <Form
-            v-bind="store.form()"
-            :reset-on-success="['password', 'password_confirmation']"
-            v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
-        >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="name">Name</Label>
-                    <Input
-                        id="name"
+    <div class="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div class="w-full max-w-md rounded-lg bg-white p-8 shadow-md dark:bg-gray-800">
+            <h2 class="mb-6 text-center text-2xl font-bold text-gray-900 dark:text-white">Register</h2>
+            
+            <form @submit.prevent="register" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                    <input
+                        v-model="form.name"
                         type="text"
+                        id="name"
                         required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="name"
-                        name="name"
-                        placeholder="Full name"
+                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
-                    <InputError :message="errors.name" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                    <input
+                        v-model="form.email"
                         type="email"
+                        id="email"
                         required
-                        :tabindex="2"
-                        autocomplete="email"
-                        name="email"
-                        placeholder="email@example.com"
+                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
-                    <InputError :message="errors.email" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                    <input
+                        v-model="form.password"
+                        type="password"
                         id="password"
-                        type="password"
                         required
-                        :tabindex="3"
-                        autocomplete="new-password"
-                        name="password"
-                        placeholder="Password"
+                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
-                    <InputError :message="errors.password" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
-                    <Input
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                    <input
+                        v-model="form.password_confirmation"
+                        type="password"
                         id="password_confirmation"
-                        type="password"
                         required
-                        :tabindex="4"
-                        autocomplete="new-password"
-                        name="password_confirmation"
-                        placeholder="Confirm password"
+                        class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
-                    <InputError :message="errors.password_confirmation" />
                 </div>
 
-                <Button
-                    type="submit"
-                    class="mt-2 w-full"
-                    tabindex="5"
-                    :disabled="processing"
-                    data-test="register-user-button"
-                >
-                    <Spinner v-if="processing" />
-                    Create account
-                </Button>
-            </div>
+                <div v-if="error" class="text-sm text-red-600 dark:text-red-400">
+                    {{ error }}
+                </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink
-                    :href="login()"
-                    class="underline underline-offset-4"
-                    :tabindex="6"
-                    >Log in</TextLink
+                <button
+                    type="submit"
+                    :disabled="loading"
+                    class="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
                 >
+                    {{ loading ? 'Registering...' : 'Register' }}
+                </button>
+            </form>
+
+            <div class="mt-4 text-center text-sm">
+                <p class="text-gray-600 dark:text-gray-400">
+                    Already have an account?
+                    <router-link to="/login" class="font-medium text-indigo-600 hover:text-indigo-500">Login</router-link>
+                </p>
             </div>
-        </Form>
-    </AuthBase>
+        </div>
+    </div>
 </template>
