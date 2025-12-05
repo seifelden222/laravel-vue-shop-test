@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,5 +25,8 @@ Route::group(['prefix' => 'auth'], function () {
 
 // Products Routes
 
-Route::apiResource('products', ProductController::class);
+Route::apiResource('products', ProductController::class)->middleware('auth:api');
 
+// Orders Routes
+
+Route::post('orders', [OrderController::class, 'store'])->middleware('auth:api');
