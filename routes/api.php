@@ -25,7 +25,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 // Products Routes
 
-Route::apiResource('products', ProductController::class);
+Route::apiResource('products', ProductController::class)->middleware('auth:api');
 
 // Orders Routes
 

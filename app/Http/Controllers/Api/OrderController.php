@@ -56,6 +56,11 @@ class OrderController extends Controller
                     // Decrease Stock
                     $cartItem->product->decrement('stock', $cartItem->quantity);
 
+                    // Update status if stock is 0
+                    if ($cartItem->product->fresh()->stock == 0) {
+                        $cartItem->product->update(['status' => 'out_of_stock']);
+                    }
+
                     $itemsSummary[] = [
                         'product' => $cartItem->product->name,
                         'quantity' => $cartItem->quantity,
