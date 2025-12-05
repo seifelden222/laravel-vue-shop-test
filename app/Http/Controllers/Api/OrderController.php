@@ -81,4 +81,20 @@ class OrderController extends Controller
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }
+    public function index()
+    {
+        $orders = Order::where('user_id', auth()->id())->with('items.product')->latest()->get();
+        return response()->json(['orders' => $orders]);
+    }
+
+    public function show($id)
+    {
+        $order = Order::where('user_id', auth()->id())->with('items.product')->find($id);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        return response()->json(['order' => $order]);
+    }
 }
